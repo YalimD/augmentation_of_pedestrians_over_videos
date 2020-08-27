@@ -1,0 +1,59 @@
+------------------------------
+Dialogue Agent Script
+---------------------------------
+Hello.
+Who are you?
+I am <name>.
+My name is <name>.
+How are you?
+I am fine.
+I am not fine.
+Where are you going?
+I am going to the library.
+I am going to the engineering building.
+I am going to the Marmara restaurant.
+I am going to the Cafein restaurant
+I am going to the smoking area.
+Please follow me.
+Please stop following me.
+Ok I wont follow you.
+Ok.
+No.
+Please take me to the library.
+Please take me to the engineering building.
+Please take me to the marmara restaurant.
+Please take me to the cafein restaurant.
+Please take me to the smoking area.
+We have arrived.
+Goodbye.
+Sorry I cannot understand what you are saying.
+------------------------------
+
+------------------------------
+Guide Agent Script
+------------------------------
+Hello.
+Can I help you with something else?
+Please follow me.
+Ok I will take you to the library.
+Ok I will take you to the engineering building.
+Ok I will take you to the Marmara restaurant.
+Ok I will take you to the Cafein restaurant.
+Ok I will take you to the smoking area.
+We have arrived.
+I am sorry, I cannot understand what you are saying.
+Goodbye.
+Ok I will follow you.
+Ok I will wait here.
+I am Rachel. I will be your guide in Bilkent University.
+I am fine thank you.
+
+Bilkent University was founded on October 20, 1984 by İhsan Doğramacı. The aim was to create a center of excellence in higher education and research.
+Preparations for Bilkent University had begun as early as 1967, with the purchase of a large tract of land to the west of Ankara. In the late 1970s and early 1980s the above mentioned foundations undertook construction, on the future site of Bilkent, of the buildings which now house administrative offices, the Faculty of Engineering, and the library. Construction of residences for academic staff, cafeterias, student dormitories, the Student Union building and various academic buildings followed in rapid succession.
+Currently there are about 13,000 students in 9 faculties and 2 four-year professional schools. Among them are foreign students from different countries. With funds from the endowments provided by the founder, the university each year awards scholarships to 47% of the student body.
+
+The Bilkent University Libraries are located at the center of Main Campus and, on the East Campus, in N-Building. Main Campus Library is open from 8.30-23.30 during the week and 9.00-23.30 at the weekend. The libraries are organized primarily to serve the Bilkent student body, and academic and administrative staff. However, users from outside Bilkent are also welcome to use the Library, but most do not have borrowing rights. For more information, please see the Library Rules for Bilkent Alumni and Library Rules for Special Users on the Library website.
+
+
+
+------------------------------

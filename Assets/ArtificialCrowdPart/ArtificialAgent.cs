@@ -23,31 +23,33 @@ namespace RVO
 
         private Material defaultMaterial = null;
         private Material defaultHairMaterial = null;
-
-        //The RVO:Agent reference
-        private RVO.Agent agentReference;
         private Animator anim;
+        
         private bool selected; //Is this agent currently selected by user to modify its RVO properties
-        private float userSpeed; //User given speed multipication
+
+        public struct UserCoefficients
+        {
+            public float speedCoefficient;
+            public float rangeCoefficient;
+            public float reactionCoefficient;
+        } 
+
+        public UserCoefficients coefficients;
+
         private bool forced; //When the agent is forced to move from its original position in order to solely avoid collision
                             // it should return to its original position after certain time has passed 
         private Vector3 stableLocation;
         private float stableTimer; //Timer for returning to original position
 
-        //Reference to navigation agent as it will determine this agent's preferred velocity
-    //    UnityEngine.AI.NavMeshAgent navAgent;
-        private int agentId;
-
-        public int AgentId { get { return agentId; } set { agentId = value; } }
-        public RVO.Agent AgentReference { get { return agentReference; } set { agentReference = value; } }
+        public int AgentId { get; set; }
+        public Agent AgentReference { get; set; }
 
         #endregion
 
-        public void createAgent(int id, RVO.Agent agentReference)
+        public void createAgent(int id, Agent agentReference)
         {
-            agentId = id;
-            this.agentReference = agentReference;
-        //    navAgent = transform.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            AgentId = id;
+            AgentReference = agentReference;
             anim = transform.GetComponent<Animator>();
 
             defaultMaterial = transform.Find("body").GetComponent<Renderer>().material;
@@ -57,19 +59,23 @@ namespace RVO
             goal = transform.position;
             path = null;
             pathStatus = -1;
-            userSpeed = 1;
+            
+            coefficients = new UserCoefficients();
+            coefficients.speedCoefficient = 1f;
+            coefficients.rangeCoefficient = 1f;
+            coefficients.reactionCoefficient = 1f;
 
             forced = false;
             stableLocation = Vector3.zero;
             stableTimer = 0f;
         }
 
-
         public void Step()
         {
 
             // Updating the animations
-            anim.SetFloat("Velocity",RVOMath.abs(goalDirection) * 100f); //TODO: Consider height as well
+            anim.SetFloat("Velocity", (RVOMath.abs(AgentReference.velocity_) / AgentReference.maxSpeed_) 
+                                    * coefficients.speedCoefficient); 
 
             if (!AgentBehaviour.Instance.Visibility)
             {
@@ -87,18 +93,17 @@ namespace RVO
             //Assign the stable position (before migrating because of collision)
             if (forced)
                 stableTimer++;
-            if (stableTimer == 20f)
+
+            if (stableTimer == 30f)
             {
+                Debug.Log("Stabilizing");
                 setDestination(stableLocation,0.01f);
                 forced = false;
                 stableTimer = 0f;
             }
 
-            //Debug.Log("Artificial Pedestrian with velocity " + agentReference.velocity_ + " and position " + agentReference.position_);
-
-                
+            //Debug.Log("Artificial Pedestrian with velocity " + agentReference.velocity_ + " and position " + agentReference.position_);   
         }
-
 
         private Vector3 goal;
         private NavMeshPath path;
@@ -117,12 +122,13 @@ namespace RVO
             forced = false;
             stableTimer = 0f;
 
-            Debug.Log("Going with range of" + agentReference.neighborDist_);
+            Debug.Log("Going with range " + AgentReference.neighborDist_);
+            Debug.Log("Going with speed " + AgentReference.maxSpeed_);
+
 
         }
         Vector2 goalDirection = new Vector2(0.0f, 0.0f);
 
-        
         public void setPreferred()
         {
             goalDirection = new Vector2(0.0f, 0.0f);
@@ -133,15 +139,13 @@ namespace RVO
                 if (RVOMath.absSq(goalDirection) < goalOffset)
                 {
                     pathStatus++;
-                       //if (pathStatus < path.corners.Length)
-                       //{
-                       //    goalDirection = new Vector2(path.corners[pathStatus].x, path.corners[pathStatus].z) - agentReference.position_;
-                       //}
+
                 }
-                if (RVOMath.absSq(goalDirection) > 0.01f)
+                if (RVOMath.absSq(goalDirection) > AgentReference.maxSpeed_ * 0.9)
                 {
                     //Choose between two; max speed or less. (This provides somewhat smooth movement)
-                    float speed = userSpeed * (float)((RVOMath.abs(RVOMath.normalize(goalDirection) / 35f) > 0.1) ? 0.1 : RVOMath.abs(RVOMath.normalize(goalDirection) / 35f));
+//                    float speed = userCoefficient * (float)((RVOMath.abs(RVOMath.normalize(goalDirection) / 1f) > 0.1) ? 0.1 : RVOMath.abs(RVOMath.normalize(goalDirection) / 1f));
+                    float speed = (float)((RVOMath.abs(RVOMath.normalize(goalDirection)) > AgentReference.maxSpeed_ * 0.9) ? AgentReference.maxSpeed_ * 0.9 : RVOMath.abs(RVOMath.normalize(goalDirection)) * AgentReference.maxSpeed_);
                     goalDirection = new Vector2(RVOMath.normalize(goalDirection).x() * speed, RVOMath.normalize(goalDirection).y() * speed);
 
                 }
@@ -154,29 +158,31 @@ namespace RVO
                 //setDestination(transform.position);
             }
 
-            agentReference.prefVelocity_ = goalDirection * RVOMagnify.magnify;
+            AgentReference.prefVelocity_ = goalDirection *  RVOMagnify.Magnify;
         }
 
         public void updateVelo()
         {
             //Debug.Log("Agent " + agentId + " - " + RVOMath.abs(agentReference.velocity_) + " with path length" + path);
+
             //If the agent doesnt have a path but it needs to move to avoid collision
-            if (pathStatus == -1 && RVOMath.abs(agentReference.velocity_) >= 0.01f && !forced )
+            if (pathStatus == -1 && RVOMath.abs(AgentReference.velocity_) >= 0.01f && !forced )
             {
                 forced = true;
                 stableLocation = transform.position;
-   
             }
 
-            goalDirection = new Vector2(agentReference.velocity_.x() / RVOMagnify.magnify, agentReference.velocity_.y() / RVOMagnify.magnify);
-            transform.position = new Vector3(agentReference.position_.x_ / RVOMagnify.magnify, transform.position.y, agentReference.position_.y_ / RVOMagnify.magnify);
+            goalDirection = new Vector2(AgentReference.velocity_.x() /  RVOMagnify.Magnify,
+                                        AgentReference.velocity_.y() /  RVOMagnify.Magnify);
+            transform.position = new Vector3(AgentReference.position_.x_ /  RVOMagnify.Magnify,
+                                             transform.position.y, AgentReference.position_.y_ /  RVOMagnify.Magnify);
 
             if (new Vector3(goalDirection.x(), 0f, goalDirection.y()).magnitude != 0)
             {
                 Quaternion rotation = Quaternion.LookRotation(new Vector3(goalDirection.x(), 0f, goalDirection.y()));
                 rotation.x = 0;
                 rotation.z = 0;
-                transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 10f);
+                transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * RVOMagnify.Magnify);
             }
 
          //   }
@@ -185,15 +191,10 @@ namespace RVO
 
         }
 
-        public void setSpeed(float speed)
-        {
-            userSpeed = speed;
-        }
-
         //Change the material's emission to highlight the agent
         internal void setSelected()
         {
-            this.selected = true;
+            selected = true;
             transform.Find("body").GetComponent<Renderer>().material = selectedMat;
             if (defaultHairMaterial)
                 transform.Find("hair").GetComponent<Renderer>().material = selectedMat;
@@ -201,7 +202,7 @@ namespace RVO
 
         internal void deSelect()
         {
-            this.selected = false;
+            selected = false;
             transform.Find("body").GetComponent<Renderer>().material = defaultMaterial;
             if (defaultHairMaterial)
                 transform.Find("hair").GetComponent<Renderer>().material = defaultHairMaterial;
@@ -212,117 +213,6 @@ namespace RVO
             return selected;
         }
 
-
-        
-        //todo: REMOVE OLD, UNSTABLE NAVIGATİON VERSION WHERE COLLISION AVOIDANCE IS DONE BY THE NAVIGATION AGENT, WHICH IS WRONG
-        //public void setPreferred()
-        //{
-        //    agentReference.prefVelocity_ = new Vector2(navAgent.velocity.x, navAgent.velocity.z);
-        //}
-        //public void updateVelo()
-        //{
-        //    /* Possible solution to desyncronized movement between RVO and NavmeshAgent
-        //     * 
-        //     * When the navmesh agent is gathering speed (acceleration) the RVO rounds the give velocity to 0 as it uses signle digit precision
-        //     * Even if we move the agent to RVO loc, it stays still as navmeshagent never gains enough velocity to escape from rounding to zero!
-        //     * 
-        //     * So, until navmeshagent gets to an acceptable speed, it's velocity shouldn't be touched. AND the RVO agent should be located
-        //     * with the same position of navmeshagent. As this happens in a split second, it shouldn't cause problems
-        //     * 
-        //     * After that, in order to make sure the navAgent and RVO is on the same location, we will locate the navmesh agent according to the result of
-        //     * RVO, as RVO loses precision and that difference shouldn't be allowed to add up.
-        //     */
-        //    agentReference.computeNewVelocity();
-
-        //    if (navAgent.hasPath && (RVOMath.abs(agentReference.velocity_) <= navAgent.speed * 0.5f))
-        //    {
-        //        agentReference.position_ = new Vector2(transform.position.x, transform.position.z);
-        //        agentReference.velocity_ = new Vector2(navAgent.velocity.x, navAgent.velocity.z);
-
-        //          navAgent.acceleration = (navAgent.remainingDistance > 5) ? 10f:2f;
-
-        //        Debug.Log("Under nav with nav velocity:" + navAgent.velocity + "but agent vel" + agentReference.velocity_);
-        //    }
-        //    else if (navAgent.remainingDistance <= 0.1f){
-        //        Debug.Log("STOP");
-        //        agentReference.velocity_ = new Vector2(0, 0);
-        //        navAgent.ResetPath();
-        //    }
-        //    else
-        //    {
-        //        navAgent.velocity = new Vector3(agentReference.velocity_.x(), 0, agentReference.velocity_.y());
-        //        Debug.Log("under RVO with agent velocity:" + agentReference.velocity_);
-
-        //    }
-
-        //    Rotate the agent to directly match its orientation
-        //    /*
-        //    Quaternion rotation = Quaternion.LookRotation(navAgent.velocity);
-        //    rotation.x = 0;
-        //    rotation.z = 0;
-        //    transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 1f);
-
-
-        //    */
-
-        //    /*
-        //    Debug.Log(transform.GetComponent<Collider>().gameObject.name);
-        //        if (GetComponent<NavMeshAgent>().hasPath && !agentReference.velocity_.Equals(new Vector2(0f, 0f)) && transform.GetComponent<NavMeshAgent>().velocity.magnitude > 5){
-        //            transform.GetComponent<NavMeshAgent>().velocity = new Vector3(agentReference.velocity_.x(), 0, agentReference.velocity_.y());
-        //            transform.GetComponent<NavMeshAgent>().Warp(new Vector3(agentReference.position_.x(), 3.6f, agentReference.position_.y()));
-        //            transform.position = new Vector3(agentReference.position_.x(), 4f, agentReference.position_.y());
-        //}
-        //        else if (!GetComponent<NavMeshAgent>().hasPath)
-        //            agentReference.velocity_ = new Vector2(0f, 0f);
-            
-        //        transform.GetComponent<NavMeshAgent>().Move(new Vector3(agentReference.velocity_.x(), 0, agentReference.velocity_.y()) -
-        //                 transform.GetComponent<NavMeshAgent>().velocity);
-        //          Debug.Log("Velocity is:" + new Vector3(agentReference.velocity_.x(), 0, agentReference.velocity_.y()));
-        //        Debug.Log("The Velocity of agent " + agentId + " is: "  + transform.GetComponent<NavMeshAgent>().velocity);
-        //     */
-        //}
-        
-        
-        
-        /*
-
-        
-            //Debug.Log(GetComponent<NavMeshAgent>().hasPath);
-           // if (GetComponent<NavMeshAgent>().hasPath)
-          //  {
-                //Update the agent's velocity in the RVO simulation part through RVO.Agent Reference
-                //But as the RVO simulation works on 2d in itself, the velocity is converted (z becomes y)
-
-                //TODO: The precision of NavMesh and RVO doesn't match, therefore causing movement problems
-                //  Vector3 nav = transform.GetComponent<NavMeshAgent>().velocity;
-                // Debug.Log("Navigation Velocity of agent " + agentId + " is:" + nav);
-                //transform.GetComponent<NavMeshAgent>().velocity = Vector3.zero;
-
-                //  transform.GetComponent<NavMeshAgent>().velocity = new Vector3((float.Parse(string.Format("{0:+#;-#;0.0}", nav.x)) == 0.0f && nav.x != 0f) ? 1f : float.Parse(string.Format("{0:+#;-#;0.0}", nav.x)), 0, (float.Parse(string.Format("{0:+#;-#;0.0}", nav.z)) == 0.0f && nav.z != 0f) ? 1f : float.Parse(string.Format("{0:+#;-#;0.0}", nav.z)));
-                // Debug.Log(float.Parse(string.Format("{0:+#;-#;0.0}", nav.x)));
-                //agentReference.prefVelocity_ = vectorConverter(transform.GetComponent<NavMeshAgent>().velocity);
-              //  transform.GetComponent<NavMeshAgent>().
-                agentReference.prefVelocity_ =  new Vector2(transform.GetComponent<NavMeshAgent>().velocity.x, transform.GetComponent<NavMeshAgent>().velocity.z);
-                Debug.Log("Preferred jghjhgjVelocity of agent " + agentId + " is:" + transform.GetComponent<NavMeshAgent>().velocity);
-                Debug.Log("Preferred Velocity of agent " + agentId + " is:" + agentReference.prefVelocity_);
-
-                //In between, we need to make sure the simulation does a step for calculation of the new velocity
-
-                agentReference.update(); 
-                agentReference.computeNewVelocity();
-               // Debug.Log(agentReference.velocity_.Equals(new Vector2(0f, 0f)));
-              //  transform.Translate(new Vector3(agentReference.velocity_.x(), 0, agentReference.velocity_.y()));
-                if (GetComponent<NavMeshAgent>().hasPath && !agentReference.velocity_.Equals(new Vector2(0f, 0f)) && transform.GetComponent<NavMeshAgent>().velocity.magnitude > 5)
-                    transform.GetComponent<NavMeshAgent>().velocity = new Vector3(agentReference.velocity_.x(), 0, agentReference.velocity_.y());
-                else if (!GetComponent<NavMeshAgent>().hasPath)
-                    agentReference.velocity_ = new Vector2(0f, 0f);
-
-               // transform.GetComponent<NavMeshAgent>().Move(new Vector3(agentReference.velocity_.x(), 0, agentReference.velocity_.y()) -
-                 //        transform.GetComponent<NavMeshAgent>().velocity);
-                //  Debug.Log("Velocity is:" + new Vector3(agentReference.velocity_.x(), 0, agentReference.velocity_.y()));
-                Debug.Log("The Velocity of agent " + agentId + " is: "  + transform.GetComponent<NavMeshAgent>().velocity);
-          //  }
-        }*/
 
     }
 

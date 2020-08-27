@@ -101,22 +101,13 @@ namespace RVO
         internal IList<Obstacle> obstacles_;
         internal KdTree kdTree_;
         internal float timeStep_;
-
-        private static Simulator instance_ = new Simulator();
-
         private Agent defaultAgent_;
         private ManualResetEvent[] doneEvents_;
         private Worker[] workers_;
         private int numWorkers_;
         private float globalTime_;
 
-        public static Simulator Instance
-        {
-            get
-            {
-                return instance_;
-            }
-        }
+        public static Simulator Instance { get; } = new Simulator();
 
         /**
          * <summary>Adds a new agent with default properties to the simulation.
@@ -202,7 +193,7 @@ namespace RVO
         }
 
 
-        /*  Methods added by Yalým Doðan
+        /*  Methods added by Yalï¿½m Doï¿½an
          *  Adds the agent on the given location and returns its reference, the agent is irresponsive as it doesn't 
 		 * consider any neighbors
 		 */ 
@@ -728,7 +719,8 @@ namespace RVO
          * <param name="velocity">The default initial two-dimensional linear
          * velocity of a new agent.</param>
          */
-        public void setAgentDefaults(float neighborDist, int maxNeighbors, float timeHorizon, float timeHorizonObst, float radius, float maxSpeed, Vector2 velocity)
+        public void setAgentDefaults(float neighborDist, int maxNeighbors, float timeHorizon, float timeHorizonObst,
+                                     float radius, float maxSpeed, Vector2 velocity)
         {
             if (defaultAgent_ == null)
             {

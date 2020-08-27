@@ -32,7 +32,7 @@ public class VideoInfo: MonoBehaviour {
         fpsCount = GameObject.Find("FPSCount").gameObject.GetComponent<Text>();
         name = GameObject.Find("VideoName").gameObject.GetComponent<Text>();
 
-        name.text = "Video Name: " + Camera.main.GetComponent<MyVideoPlayer>().getVideoName();
+        name.text = "Video Name: " + Camera.main.GetComponent<MyVideoPlayer>().GetVideoName();
     }
 
     //Update the delta time for fps and time of the video
@@ -41,6 +41,7 @@ public class VideoInfo: MonoBehaviour {
         if (Time.timeScale > 0)
         {
             deltaTime += Time.deltaTime;
+
             //Update fps every few frames
             if (++framesPassed == frameThreshold)
             {
@@ -49,8 +50,6 @@ public class VideoInfo: MonoBehaviour {
                 framesPassed = 0;
                 deltaTime = 0;
             }
-            //	deltaTime += (Time.deltaTime - deltaTime) * 0.1f;
-            //    float msec = deltaTime * 1000.0f;
 
             fpsCount.text = string.Format("FPS: {0:0.}", fps);
         }

@@ -17,35 +17,28 @@ namespace RVO
     public class ProjectedAgent : MonoBehaviour
     {
         //Timelimit of agent to be synced with Agent Projection Class
-        private const float TIMELIMIT = 30f;
+        private const float TIMELIMIT = 15f;
 
         private bool isSync;
         private float timer;
         private int trackId; //This is the id which is given by the projection 
         private int rvoId;
 
-        // Properties
-
-        //The RVO:Agent reference
-        RVO.Agent agentReference;
-        Vector3 velocity;
-
         //Accessors mutators
-        public Vector3 Velocity { set { velocity = value; } get { return velocity; } }
+        public Vector3 Velocity { set; get; }
         public Vector3 Pos { get { return transform.position; } }
         public int TrackId { get; set; }
         public int RvoId { get; set; }
-        public RVO.Agent AgentReference { get { return agentReference; } }
+        public Agent AgentReference { get; private set; }
         public bool IsSync { get; set; }
 
-
         //Constructor need 1 parameter id that is assigned to the agent
-        public void createAgent(Vector3 initialVelocity, int trackid, int RVOId, RVO.Agent agentReference)
+        public void createAgent(Vector3 initialVelocity, int trackid, int RVOId, Agent agentReference)
         {
-            velocity = initialVelocity;
-            this.trackId = trackid;
+            Velocity = initialVelocity;
+            trackId = trackid;
             rvoId = RVOId;
-            this.agentReference = agentReference;
+            AgentReference = agentReference;
             //So that this agent ignores the neighboring agents in RVO. But participates the collision avoidance
 
             //Is this agent stil in the output file from detection ?
@@ -77,19 +70,18 @@ namespace RVO
                     PedestrianProjection.Instance.removeAgent(trackId, transform.gameObject);
             }
 
-
-            mag = velocity.magnitude;
-            agentReference.prefVelocity_ = new Vector2(velocity.x, velocity.z)  * RVOMagnify.magnify; //TODO: RVOmagnifiy
-            agentReference.velocity_ = new Vector2(velocity.x, velocity.z) * RVOMagnify.magnify;
-            agentReference.position_ = new Vector2(transform.position.x, transform.position.z) * RVOMagnify.magnify; //TODO: RVOmagnifiy
+            mag = Velocity.magnitude;
+            AgentReference.prefVelocity_ = new Vector2(Velocity.x, Velocity.z)  *  RVOMagnify.Magnify; //TODO: RVOmagnifiy
+            AgentReference.velocity_ = new Vector2(Velocity.x, Velocity.z)  * RVOMagnify.Magnify;
+            AgentReference.position_ = new Vector2(transform.position.x, transform.position.z) * RVOMagnify.Magnify; //TODO: RVOmagnifiy
 
             //Debug.Log("Projected Pedestrian with ID " + RvoId + " with velocity " + agentReference.velocity_ + " and position " + agentReference.position_);
 
-            transform.Translate(velocity, Space.World);
-            Quaternion rotation = Quaternion.LookRotation(velocity- transform.position);
+            transform.Translate(Velocity, Space.World);
+            Quaternion rotation = Quaternion.LookRotation(Velocity - transform.position);
             rotation.x = 0;
             rotation.z = 0;
-            transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * 10f);
+            transform.rotation = Quaternion.Slerp(transform.rotation, rotation, Time.deltaTime * RVOMagnify.Magnify);
 
          //   transform.LookAt(velocity);
 
@@ -104,8 +96,9 @@ namespace RVO
                     child.GetComponent<Renderer>().enabled = false;
             }
 
-            if (velocity.magnitude > PedestrianProjection.Instance.SpeedLimit)
+            if (Velocity.magnitude > PedestrianProjection.Instance.SpeedLimit)
             {
+                Debug.Log("Too fast!");
                 PedestrianProjection.Instance.removeAgent(trackId, transform.gameObject);
             }
 

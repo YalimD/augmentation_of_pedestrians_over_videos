@@ -15,9 +15,12 @@ using System;
 public class GUIController : MonoBehaviour
 {
     Button add, remove;
-   // InputField neighbours; //TODO: Turn this into a text field
+
     Transform agentCount;
-    Text numOfSelected, totalArtificial, totalProjected, totalAgents;
+    Text numOfSelectedText, totalArtificialText, totalProjectedText, totalAgentsText;
+
+    InputField numOfNeighboursText, maxSpeedText, rangeText, reactionSpeedText;
+
     ColorBlock cbAdd, cbRemove;
     //Modes for adding/removing artificial agents
     /* 0 - idle
@@ -62,7 +65,7 @@ public class GUIController : MonoBehaviour
             remove.colors = cbRemove;
             add.interactable = false;
 
-            deleteSelectedAgents();
+            DeleteSelectedAgents();
 
         }
         else
@@ -74,54 +77,8 @@ public class GUIController : MonoBehaviour
             currentMode = 0;
         }
 
-       
+
     }
-
-
-    /*
-    public void toogleArtificialManagement(int mode)
-    {
-        if (currentMode == mode)
-        {
-            cbAdd.normalColor = Color.white;
-            cbAdd.highlightedColor = Color.white;
-            add.colors = cbAdd;
-            add.interactable = true;
-
-            cbRemove.normalColor = Color.white;
-            cbRemove.highlightedColor = Color.white;
-            remove.colors = cbRemove;
-            remove.interactable = true;
-
-            currentMode = 0;
-
-        }
-        else
-        {
-            currentMode = mode;
-            switch (currentMode)
-            { 
-                case 1:
-                    cbAdd = add.colors;
-                    cbAdd.normalColor = Color.yellow;
-                    cbAdd.highlightedColor = Color.yellow;
-                    add.colors = cbAdd;
-                    remove.interactable = false;
-                    break;
-                case 2:
-                    cbRemove = remove.colors;
-                    cbRemove.normalColor = Color.yellow;
-                    cbRemove.highlightedColor = Color.yellow;
-                    remove.colors = cbRemove;
-                    add.interactable = false;
-                    break;
-
-            }
-        }
-        //Depending on the current mode of the program, change the color of the related button.
-    }
-    */
-
 
     Transform collisionCounter;
     Text numOfCollisions, artificialToArtificialCollisions, artificialToProjectedCollisions;
@@ -133,9 +90,7 @@ public class GUIController : MonoBehaviour
     InputField x_pos, y_pos, z_pos;
     InputField focalArea;
     InputField heightField;
-
-    public GameObject mainCamera;//, backGroundCamera;
-    
+    public GameObject mainCamera;
 
     void Start()
     {
@@ -150,16 +105,16 @@ public class GUIController : MonoBehaviour
         remove = transform.Find("RVOControl").Find("RemoveArtificial").GetComponent<Button>();
         cbRemove = remove.colors;
 
-       // neighbours = transform.Find("RVOControl").Find("Neighbours").Find("Slider").GetComponent<Slider>();
+        // neighbours = transform.Find("RVOControl").Find("Neighbours").Find("Slider").GetComponent<Slider>();
 
         selectedAgents = new List<RVO.ArtificialAgent>();
 
         agentCount = transform.Find("AgentCounter"); //Root agentCount object
 
-        numOfSelected =  agentCount.transform.Find("NumOfSelectedArt").Find("Num").GetComponent<Text>();
-        totalProjected = agentCount.transform.Find("Show Projected").Find("Num").GetComponent<Text>();
-        totalArtificial = agentCount.transform.Find("Show Artificial").Find("Num").GetComponent<Text>();
-        totalAgents = agentCount.transform.Find("Total").Find("Num").GetComponent<Text>();
+        numOfSelectedText = agentCount.transform.Find("NumOfSelectedArt").Find("Num").GetComponent<Text>();
+        totalProjectedText = agentCount.transform.Find("Show Projected").Find("Num").GetComponent<Text>();
+        totalArtificialText = agentCount.transform.Find("Show Artificial").Find("Num").GetComponent<Text>();
+        totalAgentsText = agentCount.transform.Find("Total").Find("Num").GetComponent<Text>();
 
         collisionCounter = transform.Find("CollisionCounter");
         numOfCollisions = collisionCounter.transform.Find("NumOfCollisions").Find("Text").GetComponent<Text>();
@@ -169,7 +124,6 @@ public class GUIController : MonoBehaviour
         mainCamera = GameObject.Find("MainCamera");
 
         saveButton = GameObject.Find("SaveVideo").GetComponentInChildren<Text>();
-        saveStatus = GameObject.Find("SaveStatus").GetComponent<Text>();
 
         x_rot = GameObject.Find("X_Rot").GetComponent<InputField>();
         y_rot = GameObject.Find("Y_Rot").GetComponent<InputField>();
@@ -182,77 +136,77 @@ public class GUIController : MonoBehaviour
         focalArea = GameObject.Find("FocalLength").GetComponent<InputField>();
         heightField = GameObject.Find("HeightField").GetComponent<InputField>();
 
+        numOfNeighboursText = GameObject.Find("Neighbours").GetComponentInChildren<InputField>();
+        maxSpeedText = GameObject.Find("MaxSpeed").GetComponentInChildren<InputField>();
+        rangeText = GameObject.Find("Range").GetComponentInChildren<InputField>();
+        reactionSpeedText = GameObject.Find("ReactionSpeed").GetComponentInChildren<InputField>();
+
     }
 
     //Called after initialized using the camera calibration file
-    public void initiateCameraControls()
+    public void updateCameraParameterView()
     {
-
-        x_rot.text = mainCamera.transform.rotation.x + "";
-        y_rot.text = mainCamera.transform.rotation.y + "";
-        z_rot.text = mainCamera.transform.rotation.z + "";
+        Vector3 eulerRot = mainCamera.transform.rotation.eulerAngles;
+        x_rot.text = eulerRot.x + "";
+        y_rot.text = eulerRot.y + "";
+        z_rot.text = eulerRot.z + "";
 
         x_pos.text = mainCamera.transform.position.x + "";
         y_pos.text = mainCamera.transform.position.y + "";
         z_pos.text = mainCamera.transform.position.z + "";
 
         focalArea.text = CameraPlacement.FOVtoFocal(mainCamera.GetComponent<Camera>().fieldOfView,
-           mainCamera.GetComponent<MyVideoPlayer>().retrieveResolution()[1]) + "";
-        
+           mainCamera.GetComponent<MyVideoPlayer>().RetrieveResolution()[1]) + "";
     }
-     
+
     public void pauseVideo()
     {
-        if (Camera.main.GetComponent<MyVideoPlayer>().VideoPlaying)
+        if (mainCamera.GetComponent<Camera>().GetComponent<MyVideoPlayer>().VideoPlaying)
         {
             simRunning.text = "Simulation is Paused";
             pauseButton.GetComponentInChildren<Text>().text = "Resume";
-            Camera.main.GetComponent<MyVideoPlayer>().pauseVideo();
+            mainCamera.GetComponent<Camera>().GetComponent<MyVideoPlayer>().PauseVideo();
         }
         else
         {
             simRunning.text = "Simulation is Running";
             pauseButton.GetComponentInChildren<Text>().text = "Pause";
-            Camera.main.GetComponent<MyVideoPlayer>().resumeVideo();
+            mainCamera.GetComponent<Camera>().GetComponent<MyVideoPlayer>().ResumeVideo();
         }
 
     }
 
-    public void stopVideo()
+    public void StopVideo()
     {
-       // if (Camera.main.GetComponent<MyVideoPlayer>().VideoPlaying)
-     //   {
-            simRunning.text = "Simulation is Stopped";
-            pauseButton.GetComponentInChildren<Text>().text = "Play";
-            Camera.main.GetComponent<MyVideoPlayer>().stopVideo();
-            selectedAgents = new List<RVO.ArtificialAgent>();
-     //  }
-
+        simRunning.text = "Simulation is Stopped";
+        pauseButton.GetComponentInChildren<Text>().text = "Play";
+        mainCamera.GetComponent<Camera>().GetComponent<MyVideoPlayer>().StopVideo();
+        selectedAgents = new List<RVO.ArtificialAgent>();
     }
-    
+
     //Change the visibility of the artificial Agents
-    public void changeArtificialVisibility(bool visibility)
+    public void ChangeArtificialVisibility(bool visibility)
     {
         RVO.AgentBehaviour.Instance.Visibility = visibility;
     }
 
     //Change the visibility of the projected Agents
-    public void changeProjectedVisibility(bool visibility)
+    public void ChangeProjectedVisibility(bool visibility)
     {
         RVO.PedestrianProjection.Instance.Visibility = visibility;
     }
 
-    public void deleteSelectedAgents()
+    public void DeleteSelectedAgents()
     {
         while (selectedAgents.Count > 0)
         {
-            RVO.AgentBehaviour.Instance.removeAgent(selectedAgents[0].gameObject);
+            RVO.AgentBehaviour.Instance.RemoveAgent(selectedAgents[0].gameObject);
             selectedAgents.Remove(selectedAgents[0]);
         }
 
     }
 
-    public void selectAllAgents()
+    public void SelectAllAgents()
     {
         foreach (GameObject obj in RVO.AgentBehaviour.Instance.ArtificialAgents)
         {
@@ -265,11 +219,13 @@ public class GUIController : MonoBehaviour
         //If the mode is remove, then just delete the agent
         if (currentMode == 2)
         {
-            deleteSelectedAgents();
+            DeleteSelectedAgents();
         }
+
+        UpdateRVOView();
     }
 
-    public void deSelectAllAgents()
+    public void DeSelectAllAgents()
     {
         foreach (GameObject obj in RVO.AgentBehaviour.Instance.ArtificialAgents)
         {
@@ -279,28 +235,73 @@ public class GUIController : MonoBehaviour
                 selectedAgents.Remove(obj.GetComponent<RVO.ArtificialAgent>());
             }
         }
+
+        ViewDefaultRVOParameters();
+    }
+
+    void UpdateRVOView()
+    {
+        //If no agents is selected, default paramters are shown
+        if (selectedAgents.Count == 0)
+        {
+            ViewDefaultRVOParameters();
+        }
+        else if (selectedAgents.Count == 1) //show selected agent's info
+        {
+            ViewSingleAgentRVOParameters(selectedAgents[0]);
+        }
+        else //Show VAR
+        {
+            ViewPlaceholderRVOParameters();
+        }
+    }
+
+    void ViewSingleAgentRVOParameters(RVO.ArtificialAgent selectedAgent)
+    {
+        numOfNeighboursText.text = "" + selectedAgent.AgentReference.maxNeighbors_;
+        rangeText.text = "" + selectedAgent.coefficients.rangeCoefficient;
+        reactionSpeedText.text = "" + selectedAgent.coefficients.reactionCoefficient;
+        maxSpeedText.text = "" + selectedAgent.coefficients.speedCoefficient;
+    }
+
+    void ViewDefaultRVOParameters()
+    {
+        numOfNeighboursText.text = "100";
+        rangeText.text = "1";
+        reactionSpeedText.text = "1";
+        maxSpeedText.text = "1";
+    }
+
+    void ViewPlaceholderRVOParameters()
+    {
+        numOfNeighboursText.text = "VAR";
+        rangeText.text = "VAR";
+        reactionSpeedText.text = "VAR";
+        maxSpeedText.text = "VAR";
     }
 
     void Update()
     {
         //Agent selection counters are updated here
-        numOfSelected.text = selectedAgents.Count.ToString();
-        totalProjected.text = RVO.PedestrianProjection.Instance.RealAgents.Count.ToString();
-        totalArtificial.text = RVO.AgentBehaviour.Instance.ArtificialAgents.Count.ToString();
-        totalAgents.text = (RVO.AgentBehaviour.Instance.ArtificialAgents.Count + RVO.PedestrianProjection.Instance.RealAgents.Count).ToString();
+        numOfSelectedText.text = selectedAgents.Count.ToString();
+        totalProjectedText.text = RVO.PedestrianProjection.Instance.RealAgents.Count.ToString();
+        totalArtificialText.text = RVO.AgentBehaviour.Instance.ArtificialAgents.Count.ToString();
+        totalAgentsText.text = (RVO.AgentBehaviour.Instance.ArtificialAgents.Count + RVO.PedestrianProjection.Instance.RealAgents.Count).ToString();
 
         //Agent collision counters are updated here
         numOfCollisions.text = (RVO.AgentBehaviour.Instance.getAACollision() / 2 + RVO.AgentBehaviour.Instance.getAPCollision()).ToString();
-        artificialToArtificialCollisions.text = (RVO.AgentBehaviour.Instance.getAACollision() / 2 ).ToString();
+        artificialToArtificialCollisions.text = (RVO.AgentBehaviour.Instance.getAACollision() / 2).ToString();
         artificialToProjectedCollisions.text = (RVO.AgentBehaviour.Instance.getAPCollision()).ToString();
 
 
         if (focalArea.text == "0")
         {
+            updateCameraParameterView();
             focalArea.text = CameraPlacement.FOVtoFocal(mainCamera.GetComponent<Camera>().fieldOfView,
-                    mainCamera.GetComponent<MyVideoPlayer>().retrieveResolution()[1]) + "";
+                mainCamera.GetComponent<MyVideoPlayer>().RetrieveResolution()[1]) + "";
+
             Debug.Log("FOV is " + CameraPlacement.FocaltoFOV(float.Parse(focalArea.text),
-                    mainCamera.GetComponent<MyVideoPlayer>().retrieveResolution()[1]));
+                    mainCamera.GetComponent<MyVideoPlayer>().RetrieveResolution()[1]));
         }
 
         if (Input.GetMouseButtonUp(0))
@@ -312,33 +313,34 @@ public class GUIController : MonoBehaviour
                 case 0: //Select agents
                     if (Physics.Raycast(ray, out hit, 10000, 1 << 2) && hit.collider.tag == "Agent")
                     {
-                        RVO.ArtificialAgent art = hit.collider.transform.GetComponentInParent<RVO.ArtificialAgent>();
-                        if (!art.isSelected())
+                        RVO.ArtificialAgent foundAgent = hit.collider.transform.GetComponentInParent<RVO.ArtificialAgent>();
+                        if (!foundAgent.isSelected())
                         {
-                            art.setSelected();
-                            selectedAgents.Add(art);
+                            foundAgent.setSelected();
+                            selectedAgents.Add(foundAgent);
                         }
 
+                        UpdateRVOView();
                     }
-                    
+
                     break;
                 case 1://Add agent
 
-
                     if (Physics.Raycast(ray, out hit, 10000) && hit.collider.tag != "Agent")
                     {
-                        RVO.AgentBehaviour.Instance.addAgent(hit.point);
+                        RVO.AgentBehaviour.Instance.AddAgent(hit.point);
                     }
-                   // neighbours.maxValue = RVO.AgentBehaviour.Instance.numOfAgents + RVO.PedestrianProjection.Instance.;
+
+                    // neighbours.maxValue = RVO.AgentBehaviour.Instance.numOfAgents + RVO.PedestrianProjection.Instance.;
 
                     break;
                 case 2://Remove agent
                     if (Physics.Raycast(ray, out hit, 10000, 1 << 2) && hit.collider.tag == "Agent")
                     {
-                        RVO.AgentBehaviour.Instance.removeAgent(hit.collider.transform.gameObject);
-                        
+                        RVO.AgentBehaviour.Instance.RemoveAgent(hit.collider.transform.gameObject);
+
                     }
-                   // neighbours.maxValue = RVO.AgentBehaviour.Instance.numOfAgents;
+                    // neighbours.maxValue = RVO.AgentBehaviour.Instance.numOfAgents;
                     break;
                 default:
                     break;
@@ -363,7 +365,6 @@ public class GUIController : MonoBehaviour
             else if (currentMode == 0 && Physics.Raycast(ray, out hit, 10000) && hit.collider.tag != "Agent")
             {
                 foreach (RVO.ArtificialAgent agent in selectedAgents)
-                    // agent.transform.GetComponent<UnityEngine.AI.NavMeshAgent>().SetDestination(hit.point); 
                     agent.transform.GetComponent<RVO.ArtificialAgent>().setDestination(hit.point);
             }
         }
@@ -371,40 +372,59 @@ public class GUIController : MonoBehaviour
         //Debug.Log(selectedAgents.Count + "Selected agents");
     }
 
-
-    public void changeConsideredNeighbours(string numOfNeighbours) { 
+    public void ChangeConsideredNeighbours(string numOfNeighbours)
+    {
         foreach (RVO.ArtificialAgent art in selectedAgents)
-            art.AgentReference.maxNeighbors_ = int.Parse(numOfNeighbours); 
+        {
+            art.AgentReference.maxNeighbors_ = int.Parse(numOfNeighbours);
+        }
     }
-    public void changeMaxSpeed(string maxSpeed) {
+
+    public void changeMaxSpeed(string maxSpeed)
+    {
 
         if (maxSpeed.Length != 0)
         {
             foreach (RVO.ArtificialAgent art in selectedAgents)
             {
-                art.AgentReference.maxSpeed_ = float.Parse(maxSpeed);
-                art.setSpeed(float.Parse(maxSpeed));
-                //     art.GetComponent<UnityEngine.AI.NavMeshAgent>().speed = int.Parse(maxSpeed);
-                //   art.GetComponent<UnityEngine.AI.NavMeshAgent>().acceleration = 10;
+                art.AgentReference.maxSpeed_ = (art.AgentReference.maxSpeed_ * (float.Parse(maxSpeed)))
+                                              / (art.coefficients.speedCoefficient);
+                art.coefficients.speedCoefficient = float.Parse(maxSpeed);//Works as a coefficient
             }
         }
-    } //Also changes their navMeshAgent speed
-    public void changeRange(string range) { 
-        if (range.Length != 0) { 
-            foreach (RVO.ArtificialAgent art in selectedAgents) 
-                art.AgentReference.neighborDist_ = int.Parse(range);
-        } 
     }
-    public void changeReactionSpeed(string reactionSpeed) { 
-        if (reactionSpeed.Length != 0) { 
-            foreach (RVO.ArtificialAgent art in selectedAgents) art.AgentReference.timeHorizon_ = int.Parse(reactionSpeed); 
-        } }
+
+    //Also changes their navMeshAgent speed
+    public void ChangeRange(string range)
+    {
+        if (range.Length != 0)
+        {
+            foreach (RVO.ArtificialAgent art in selectedAgents)
+            {
+                art.AgentReference.neighborDist_ = (art.AgentReference.neighborDist_ * (float.Parse(range)))
+                                              / (art.coefficients.rangeCoefficient);
+                art.coefficients.rangeCoefficient = float.Parse(range);//Works as a coefficient
+            }
+        }
+    }
+    public void changeReactionSpeed(string reactionSpeed)
+    {
+        if (reactionSpeed.Length != 0)
+        {
+            foreach (RVO.ArtificialAgent art in selectedAgents)
+            {
+                art.AgentReference.timeHorizon_ = (art.AgentReference.timeHorizon_ * (float.Parse(reactionSpeed)))
+                                             / (art.coefficients.reactionCoefficient);
+                art.coefficients.reactionCoefficient = float.Parse(reactionSpeed);//Works as a coefficient
+            }
+        }
+    }
 
 
 
     public void loadVideo()
     {
-        RVO.AgentBehaviour.Instance.loadVideo();
+        RVO.AgentBehaviour.Instance.LoadVideo();
     }
 
     public void loadMesh()
@@ -415,14 +435,14 @@ public class GUIController : MonoBehaviour
     //Save the video so far (Need to check on Unity's capabilities on this)
     bool saving = false;
     Text saveButton;
-    Text saveStatus;
-    public void saveVideo() {
+    public void saveVideo()
+    {
         if (!saving)
         {
             //Start capturing
             if (RockVR.Video.VideoCaptureCtrl.instance.status == RockVR.Video.VideoCaptureCtrl.StatusType.NOT_START)
             {
-                
+
                 RockVR.Video.VideoCaptureCtrl.instance.StartCapture();
             }
 
@@ -443,7 +463,6 @@ public class GUIController : MonoBehaviour
             }
 
             saveButton.text = "Save Video";
-            saveStatus.text = "Saved video to folder \"Video\"";
             saving = false;
 
         }
@@ -452,63 +471,85 @@ public class GUIController : MonoBehaviour
     /**
      * Camera adjustment controls
      */
-    public void translateCamera(string direction) {
-        
+    public void translateCamera(string direction)
+    {
+
         Vector3 v_direction = Vector3.zero;
         switch (direction)
         {
-            case "UP": 
+            case "UP":
                 v_direction = Vector3.up;
                 break;
-            case "DOWN": 
+            case "DOWN":
                 v_direction = Vector3.down;
                 break;
-            case "LEFT": 
+            case "LEFT":
                 v_direction = Vector3.left;
                 break;
-            case "RIGHT": 
+            case "RIGHT":
                 v_direction = Vector3.right;
                 break;
-            case "FORWARD": 
+            case "FORWARD":
                 v_direction = Vector3.forward;
                 break;
-            case "BACK": 
+            case "BACK":
                 v_direction = Vector3.back;
                 break;
         }
-        mainCamera.transform.Translate(v_direction,Space.World);
-       // backGroundCamera.transform.Translate(v_direction,Space.World);
+        mainCamera.transform.Translate(v_direction, Space.World);
 
-    
+
     } //Moves the camera by a unit towards the given direction
 
-
-    public void updateCameraPosition()
+    //TODO: Put camera properties in a struct aside from the camera object
+    public void updateCameraPosition_X(string x_pos)
     {
-
-        try
-        {
-            float x = float.Parse(x_pos.text);
-            float y = float.Parse(y_pos.text);
-            float z = float.Parse(z_pos.text);
-            Debug.Log("Pos changed to" + x + y + z);
-            mainCamera.transform.position = new Vector3(x,y,z);
-            //backGroundCamera.transform.rotation = Quaternion.Euler(x, y, z);
-        }
-        catch (System.FormatException e) { }
+        float x = float.Parse(x_pos);
+        mainCamera.transform.position.Set(x, mainCamera.transform.position.y,
+                                            mainCamera.transform.position.z);
     }
 
+    public void updateCameraOrientation_Y(string y_rot)
+    {
 
-    public void updateCameraOrientation() {
+        float y = float.Parse(y_rot);
+        Vector3 rotationEuler = mainCamera.transform.rotation.eulerAngles;
+        mainCamera.transform.rotation = Quaternion.Euler(rotationEuler.x,
+                                                        y, rotationEuler.z);
+    }
 
-        try
-        {
-            float x = float.Parse(x_rot.text);
-            float y = float.Parse(y_rot.text);
-            float z = float.Parse(z_rot.text);
-            mainCamera.transform.rotation = Quaternion.Euler(x, y, z);
-            //backGroundCamera.transform.rotation = Quaternion.Euler(x, y, z);
-        }catch (System.FormatException e){}
+    public void updateCameraPosition_Z(string z_pos)
+    {
+        float z = float.Parse(z_pos);
+        mainCamera.transform.position.Set(mainCamera.transform.position.x,
+                                            mainCamera.transform.position.y, z);
+    }
+
+    public void updateCameraOrientation_X(string x_rot)
+    {
+
+        float x = float.Parse(x_rot);
+        Vector3 rotationEuler = mainCamera.transform.rotation.eulerAngles;
+        mainCamera.transform.rotation = Quaternion.Euler(x, rotationEuler.y,
+                                                            rotationEuler.z);
+    }
+
+    public void updateCameraPosition_Y(string y_pos)
+    {
+        float y = float.Parse(y_pos);
+        mainCamera.transform.position.Set(mainCamera.transform.position.x,
+                                            y,
+                                            mainCamera.transform.position.z);
+    }
+
+    public void updateCameraOrientation_Z(string z_rot)
+    {
+
+        float z = float.Parse(z_rot);
+        Vector3 rotationEuler = mainCamera.transform.rotation.eulerAngles;
+        mainCamera.transform.rotation = Quaternion.Euler(rotationEuler.x,
+                                                            rotationEuler.y,
+                                                            z);
     }
 
     public void updateCameraFOV()
@@ -518,23 +559,21 @@ public class GUIController : MonoBehaviour
             float focalLength = float.Parse(focalArea.text);
             mainCamera.GetComponent<Camera>().fieldOfView = CameraPlacement.FocaltoFOV(focalLength, mainCamera.GetComponent<MyVideoPlayer>().VideoHeight);
         }
-        catch (System.FormatException e) { }
+        catch (FormatException e) { }
     }
 
-    public void resetCamera (string attribute) //Reset the given attribute of the camera (either position or orientation)
-    { 
-        if(attribute.Equals("POS"))
+    public void resetCamera(string attribute) //Reset the given attribute of the camera (either position or orientation)
+    {
+        if (attribute.Equals("POS"))
         {
             Debug.Log("Pos changed");
             mainCamera.transform.position = Vector3.zero;
-            //backGroundCamera.transform.position = Vector3.zero;
         }
         else if (attribute.Equals("ROT"))
         {
             mainCamera.transform.rotation = Quaternion.Euler(0, 0, 0);
-           // backGroundCamera.transform.rotation = Quaternion.Euler(0, 0, 0);
         }
-        initiateCameraControls();
+        updateCameraParameterView();
     }
 
 
@@ -549,7 +588,7 @@ public class GUIController : MonoBehaviour
         RVO.PedestrianProjection.Instance.resetHeights(float.Parse(height));
     }
 
-    public void updatePedestrianHeight(float value)
+    public void UpdatePedestrianHeight(float value)
     {
         heightField.text = "" + value;
     }
