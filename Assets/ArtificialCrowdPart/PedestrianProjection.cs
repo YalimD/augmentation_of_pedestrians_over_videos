@@ -106,6 +106,32 @@ namespace RVO
             Instance.video = GameObject.Find("MainCamera").GetComponent<MyVideoPlayer>();
             Instance.video.StartVideo(videoPath);
 
+            // Handle scene light based on video name, use the default light otherwise
+            string videoName = System.IO.Path.GetFileNameWithoutExtension(videoPath);
+
+            Transform[] trs = GameObject.Find("lights").GetComponentsInChildren<Transform>(true);
+            bool foundVideo = false;
+
+            foreach (Transform t in trs)
+            {
+                if (t.name == videoName)
+                {
+                    t.gameObject.SetActive(true);
+                    foundVideo = true;
+                }
+            }
+
+            if (!foundVideo)
+            {
+                foreach (Transform t in trs)
+                {
+                    if (t.name == "sun")
+                    {
+                        t.gameObject.SetActive(true);
+                    }
+                }
+            }
+
             //     instance.magnificationMultiplier = 1;
 
             //Load the pedestrian model

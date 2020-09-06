@@ -192,8 +192,18 @@ namespace RVO
 
             //Initiate agent models
             Instance.agentModels = new List<GameObject>();
-            Instance.agentModels.Add(Resources.Load("AgentChuan", typeof(GameObject)) as GameObject);
-            Instance.agentModels.Add(Resources.Load("AgentJenna", typeof(GameObject)) as GameObject);
+
+            Instance.agentModels.Add(Resources.Load("AgentMH1", typeof(GameObject)) as GameObject);
+            Instance.agentModels.Add(Resources.Load("AgentMH2", typeof(GameObject)) as GameObject);
+            Instance.agentModels.Add(Resources.Load("AgentMH3", typeof(GameObject)) as GameObject);
+            Instance.agentModels.Add(Resources.Load("AgentMH4", typeof(GameObject)) as GameObject);
+            Instance.agentModels.Add(Resources.Load("AgentMH5", typeof(GameObject)) as GameObject);
+            Instance.agentModels.Add(Resources.Load("AgentMH6", typeof(GameObject)) as GameObject);
+            Instance.agentModels.Add(Resources.Load("AgentMH7", typeof(GameObject)) as GameObject);
+            Instance.agentModels.Add(Resources.Load("AgentMH8", typeof(GameObject)) as GameObject);
+            Instance.agentModels.Add(Resources.Load("AgentMH9", typeof(GameObject)) as GameObject);
+            Instance.agentModels.Add(Resources.Load("AgentMH10", typeof(GameObject)) as GameObject);
+            Instance.agentModels.Add(Resources.Load("AgentMH11", typeof(GameObject)) as GameObject);
 
             // instance.agentModels.Add(Resources.Load("AgentDavid", typeof(GameObject)) as GameObject);
             // instance.agentModels.Add(Resources.Load("AgentAngelica", typeof(GameObject)) as GameObject);
@@ -261,6 +271,15 @@ namespace RVO
             //   Debug.Log(Simulator.Instance.getNumAgents() + "with workers" + Simulator.Instance.GetNumWorkers());
         }
 
+        public void SetAnimationSpeed(float targetSpeed)
+        {
+            foreach (GameObject ag in Instance.artificialAgents)
+            {
+                ag.GetComponent<Animator>().speed = targetSpeed;
+            }
+        }
+
+        private int nextAgentIndex; // Used for getting the next agent
 
         //Add the agent to given position in the space
         public void AddAgent(Vector3 pos)
@@ -276,7 +295,10 @@ namespace RVO
 
             Vector2 origin = new Vector2(pos.x, pos.z);
 
-            GameObject newArtAgent = (GameObject)Instantiate(Instance.agentModels[(int)Math.Floor(UnityEngine.Random.value * Instance.agentModels.Count)], new Vector3(origin.x_, pos.y, origin.y_), new Quaternion());
+            // Comment out for random agent models, otherwise uses the order of agentModels
+            // GameObject newArtAgent = (GameObject)Instantiate(Instance.agentModels[(int)Math.Floor(UnityEngine.Random.value * Instance.agentModels.Count)], new Vector3(origin.x_, pos.y, origin.y_), new Quaternion());
+            GameObject newArtAgent = (GameObject)Instantiate(Instance.agentModels[nextAgentIndex], new Vector3(origin.x_, pos.y, origin.y_), new Quaternion());
+            nextAgentIndex = (nextAgentIndex + 1) % Instance.agentModels.Count;
 
             //TODO: ADJUST RVO AGENT ACCORDING TO SCALE
             newArtAgent.transform.localScale += Vector3.one * ((PedestrianProjection.Instance.PedestrianHeight == 0.0f) ? 0 : (PedestrianProjection.Instance.PedestrianHeight / newArtAgent.transform.GetComponent<CapsuleCollider>().height) - 1);

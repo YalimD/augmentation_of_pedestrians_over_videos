@@ -21,6 +21,8 @@ namespace RVO
         //The material to be set when user selects this agent
         public static Material selectedMat;
 
+        private Renderer[] childrenRenderers;
+        private Material[] defaultMaterials;
         private Material defaultMaterial = null;
         private Material defaultHairMaterial = null;
         private Animator anim;
@@ -52,6 +54,13 @@ namespace RVO
             AgentReference = agentReference;
             anim = transform.GetComponent<Animator>();
 
+            childrenRenderers = GetComponentsInChildren<Renderer>();
+            defaultMaterials = new Material[childrenRenderers.Length];
+            for(int i = 0; i < childrenRenderers.Length; i++)
+            {
+                defaultMaterials[i] = childrenRenderers[i].material;
+            }
+
             defaultMaterial = transform.Find("body").GetComponent<Renderer>().material;
             if (transform.Find("hair"))
                 defaultHairMaterial = transform.Find("hair").GetComponent<Renderer>().material;
@@ -68,14 +77,19 @@ namespace RVO
             forced = false;
             stableLocation = Vector3.zero;
             stableTimer = 0f;
+
+            // Set type for walk and idle animations to create variety
+            anim.SetInteger("Type1", (int)Math.Floor(UnityEngine.Random.value * 4));
+            anim.SetInteger("Type2", (int)Math.Floor(UnityEngine.Random.value * 7));
         }
 
         public void Step()
         {
 
             // Updating the animations
-            anim.SetFloat("Velocity", (RVOMath.abs(AgentReference.velocity_) / AgentReference.maxSpeed_) 
-                                    * coefficients.speedCoefficient); 
+            // anim.SetFloat("Velocity", (RVOMath.abs(AgentReference.velocity_) / AgentReference.maxSpeed_) * coefficients.speedCoefficient);
+
+            anim.SetBool("Walking", (RVOMath.abs(AgentReference.velocity_) / AgentReference.maxSpeed_) * coefficients.speedCoefficient > 0);
 
             if (!AgentBehaviour.Instance.Visibility)
             {
@@ -195,17 +209,28 @@ namespace RVO
         internal void setSelected()
         {
             selected = true;
-            transform.Find("body").GetComponent<Renderer>().material = selectedMat;
+            for (int i = 0; i < childrenRenderers.Length; i++)
+            {
+                childrenRenderers[i].material = selectedMat;
+            }
+
+            /*transform.Find("body").GetComponent<Renderer>().material = selectedMat;
             if (defaultHairMaterial)
-                transform.Find("hair").GetComponent<Renderer>().material = selectedMat;
+                transform.Find("hair").GetComponent<Renderer>().material = selectedMat;*/
         }
 
         internal void deSelect()
         {
             selected = false;
+            for (int i = 0; i < childrenRenderers.Length; i++)
+            {
+                childrenRenderers[i].material = defaultMaterials[i];
+            }
+            /*
             transform.Find("body").GetComponent<Renderer>().material = defaultMaterial;
             if (defaultHairMaterial)
                 transform.Find("hair").GetComponent<Renderer>().material = defaultHairMaterial;
+                */
         }
 
         internal bool isSelected()
