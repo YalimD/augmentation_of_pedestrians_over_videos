@@ -1,4 +1,4 @@
-# Augmenting Virtual Agents Into Real Crowd Videos Using Unity
+# Augmenting Virtual Agents into Real Crowd Videos Using Unity
 
 This project aims to augment a virtual crowd over a real one extracted from given video.
 The project is written on Unity using C#.
