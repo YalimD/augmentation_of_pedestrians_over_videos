@@ -66,15 +66,14 @@ public class MyVideoPlayer : MonoBehaviour
     }
 
     double deltaTime = 0.0f;
-    int skippedFrames = 0;
 
     void Update()
     {
         deltaTime += Time.deltaTime;
-        skippedFrames += 1;
 
         if (deltaTime >= (double)(1 / VideoPlayer.frameRate))
         {
+            RVO.AgentBehaviour.Instance.Step();
             VideoPlaying = VideoPlayer.frame < (long)VideoPlayer.frameCount;
 
             if (VideoPlaying)
@@ -82,22 +81,12 @@ public class MyVideoPlayer : MonoBehaviour
                 //If projection step is not sucessful, don't continue the video since it will cause delays for pedestrians
                 if (RVO.PedestrianProjection.Instance.Step())
                 {
-                    // Moved to here to keep the changes at the same time
-                    RVO.AgentBehaviour.Instance.SetAnimationSpeed(skippedFrames);
-                    RVO.AgentBehaviour.Instance.Step();
-
-                    skippedFrames = 0;
-
                     VideoPlayer.StepForward();
 
                     //Debug.Log("This should be (optimistically) 1 sec:" + deltaTime * videoPlayer.frameRate + " where framerate is " + videoPlayer.frameRate);
                     deltaTime = 0.0f;
                 }
             }
-        }
-        else
-        {
-            RVO.AgentBehaviour.Instance.SetAnimationSpeed(0);
         }
  
     }
