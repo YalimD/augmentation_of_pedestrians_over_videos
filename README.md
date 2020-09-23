@@ -6,5 +6,3 @@ The project is written on Unity using C#.
 For collision detection between virtual agents and the static and dynamic obstacles (including real pedestrians) we use Reciprocal Velocity Obstacles (RVO) proposed by Dinesh Manocha et al.
 
 We use Unity's PathFinding library for global path planning of virtual agents.
-
-NOTE: Due to the problems with Unity when using git, the downloaded files might not work as expected. This will be corrected soon.
