@@ -12,17 +12,18 @@ If you find this work useful, please cite
 Yalım Doğan, Sinan Sonlu, and Uğur Güdükbay. An Augmented Crowd Simulation System Using Automatic Determination of Navigable Areas. Computers & Graphics, 95:141–155, April 2021.
 
 ```
-@article{DOGAN2021141,
-title = {An augmented crowd simulation system using automatic determination of navigable areas},
-journal = {Computers & Graphics},
-volume = {95},
-pages = {141-155},
-year = {2021},
-issn = {0097-8493},
-doi = {https://doi.org/10.1016/j.cag.2021.01.012},
-url = {https://www.sciencedirect.com/science/article/pii/S0097849321000121},
-author = {Yalım Doğan and Sinan Sonlu and Uğur Güdükbay},
-keywords = {Pedestrian detection and tracking, Data-driven simulation, Three-dimensional reconstruction, Crowd simulation, Augmented reality, Deep learning},
-abstract = {Crowd simulations imitate the group dynamics of individuals in different environments. Applications in entertainment, security, and education require augmenting simulated crowds into videos of real people. In such cases, virtual agents should realistically interact with the environment and the people in the video. One component of this augmentation task is determining the navigable regions in the video. In this work, we utilize semantic segmentation and pedestrian detection to automatically locate and reconstruct the navigable regions of surveillance-like videos. We place the resulting flat mesh into our 3D crowd simulation environment to integrate virtual agents that navigate inside the video avoiding collision with real pedestrians and other virtual agents. We report the performance of our open-source system using real-life surveillance videos, based on the accuracy of the automatically determined navigable regions and camera configuration. We show that our system generates accurate navigable regions for realistic augmented crowd simulations.}
-}
+@Article{Dogan2021,
+	author	=	{Yal{\i}m Do{\^g}an and Sinan Sonlu and U{\^g}ur G{\"u}d{\"u}kbay},
+	title = {An Augmented Crowd Simulation System Using Automatic Determination of Navigable Areas},
+	journal = {Computers \& Graphics},
+	volume = {95},
+	pages = {141-155},
+	year = {2021},
+	month	= {April},
+	issn = {0097-8493},
+	doi = {https://doi.org/10.1016/j.cag.2021.01.012},
+	url = {https://www.sciencedirect.com/science/article/pii/S0097849321000121},
+	keywords = {Pedestrian detection and tracking, Data-driven simulation, Three-dimensional reconstruction, Crowd simulation, Augmented reality, Deep learning},
+	abstract = {Crowd simulations imitate the group dynamics of individuals in different environments. Applications in entertainment, security, and education require augmenting simulated crowds into videos of real people. In such cases, virtual agents should realistically interact with the environment and the people in the video. One component of this augmentation task is determining the navigable regions in the video. In this work, we utilize semantic segmentation and pedestrian detection to automatically locate and reconstruct the navigable regions of surveillance-like videos. We place the resulting flat mesh into our 3D crowd simulation environment to integrate virtual agents that navigate inside the video avoiding collision with real pedestrians and other virtual agents. We report the performance of our open-source system using real-life surveillance videos, based on the accuracy of the automatically determined navigable regions and camera configuration. We show that our system generates accurate navigable regions for realistic augmented crowd simulations.}
+}  
 ```
