@@ -7,7 +7,9 @@ For collision detection between virtual agents and the static and dynamic obstac
 
 We use Unity's PathFinding library for global path planning of virtual agents.
 
-If you find this work useful, please cite:
+If you find this work useful, please cite
+
+Yalım Doğan, Sinan Sonlu, and Uğur Güdükbay. An Augmented Crowd Simulation System Using Automatic Determination of Navigable Areas. Computers & Graphics, 95:141–155, April 2021.
 
 ```
 @article{DOGAN2021141,
